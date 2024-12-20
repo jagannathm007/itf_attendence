@@ -1,0 +1,55 @@
+{
+  "name": "itf_attendence",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --x64 -w",
+    "package": "electron-packager . itf_attendence --platform=win32 --out=dist --overwrite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "ItFuturz",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "electron-packager": "^17.1.2",
+    "electron-reload": "^2.0.0-alpha.1",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-obfuscator": "^3.5.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  },
+  "build": {
+    "asar": true,
+    "appId": "com.itfuturz_attendence.app",
+    "productName": "ITF Attendence",
+    "files": [
+      "assets/**/*",
+      "release_builds/**/*",
+      "pages/**/*",
+      "node_modules/**/*",
+      "main.js"
+    ],
+    "directories": {
+      "output": "release-builds"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "assets/images/logo.jpg"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "ITF Attendence"
+    }
+  }
+}

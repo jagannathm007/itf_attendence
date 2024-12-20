@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ITF Attendence</title>
+  <link rel="stylesheet" href="./../assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./../assets/css/toastify.min.css">
+  <script src="./../assets/js/angular.min.js"></script>
+  <script src="./../assets/js/toastify.min.js"></script>
+  <script src="./../assets/js/constants.js"></script>
+  <script src="./../assets/js/controller.js"></script>
+</head>
+
+<body class="bg-dark" ng-app="itf" ng-cloak>
+  <div class="container-fluid px-4" ng-controller="TaskController">
+    <div class="my-4 text-white text-center d-flex" style="align-items: center; justify-content: space-between;">
+      <div>
+        <span style="font-size: 30px; font-weight: 600;">Task Manager</span>
+      </div>
+      <div style="font-size: 14px;display: flex; align-items: center; justify-content: space-between;">
+        <div ng-if="userData!=null" class="text-end me-2">
+          <div style="font-size: 13px;">{{ userData.name }}</div>
+          <div style="font-size: 9px;">{{ userData.designation }}</div>
+        </div>
+        <button class="btn btn-sm btn-danger" style="cursor: pointer;" type="button" ng-click="logout()">Logout</button>
+      </div>
+    </div>
+
+
+    <div class="card border-0">
+      <div class="card-body px-3">
+        <div class="mb-4 row" styl="font-size: 13px;">
+          <div class="col text-start text-success">
+            Start time: {{ time.startTime != 0 ? formatTimestamp(time.startTime) : '00:00:00' }}
+          </div>
+          <div class="col text-center">
+            End time: {{ time.endTime !=0 ? formatTimestamp(time.endTime) : '00:00:00' }}
+          </div>
+          <div class="col text-end text-danger">
+            Total time: {{ time.totalTime!="0" ? time.totalTime : '00:00:00' }}
+          </div>
+        </div>
+
+        <form ng-submit="toggleTaskTime()">
+          <table class="table table-sm table-bordered mt-2 mb-4 shadow-none">
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th width="25%" class="text-center">Status</th>
+                <th width="25%" class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="task in todayTasks">
+                <td>
+                  <textarea class="form-control form-control-sm" ng-model="task.taskName" required></textarea>
+                </td>
+                <td>
+                  <select class="form-select" ng-model="task.status">
+                    <option ng-repeat="status in taskStatus" value="{{status}}">{{ status | uppercase}}</option>
+                  </select>
+                </td>
+                <td class="text-center">
+                  <button ng-disabled="isDeletable" class="btn btn-sm btn-danger" ng-click="deleteTask(task.taskId)"
+                    style="font-size: 12px;">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3" class="text-center">
+                  <button class="btn btn-sm btn-light" type="button" ng-click="addTask()">+ Add More</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="text-center">
+            <button class="btn btn-{{ intervalWatch == null ? 'success' : 'warning'}} btn-lg" type="submit" ng-disabled="isLoading">
+              {{ intervalWatch == null ? 'Start Time' : 'End Time'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="text-center text-white mt-3">
+      @Powered By: <b>ITFuturz</b>
+    </div>
+  </div>
+</body>
+
+</html>
