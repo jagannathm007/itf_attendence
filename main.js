@@ -15,11 +15,11 @@ const createWindow = () => {
       contextIsolation: false,
       nodeIntegration: false,
       enableRemoteModule: false,
-      // devTools: false
+      devTools: false
     },
     center: true,
     maximizable: true,
-    // devTools: false,
+    devTools: false,
     icon: path.join(__dirname, "assets/images/logo.jpg"),
   });
 
@@ -31,7 +31,7 @@ const createWindow = () => {
     })
   );
 
-  // Menu.setApplicationMenu(null);
+  Menu.setApplicationMenu(null);
   let tray = new Tray(icon.resize({ width: 24, height: 24 }));
   let trayMenu = Menu.buildFromTemplate([
     {
