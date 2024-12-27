@@ -1,4 +1,5 @@
-let baseURL = "http://back.realmotors.in/api/employee";
+let isDevelopment = true;
+let baseURL = isDevelopment ? "http://localhost:3100/api/employee" :  "http://back.realmotors.in/api/employee";
 let constants = {
   session: {
     userCredentials: "_userCredentials",
@@ -10,31 +11,30 @@ let constants = {
     login: `${baseURL}/signIn`,
     getTimer: `${baseURL}/timer/find`,
     saveTimer: `${baseURL}/timer`,
+    changePassword: `${baseURL}/change-password`,
   },
 };
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
 
 const extractResponse = (response) => response.data;
 
 const errorToast = (message) => {
-  Toastify({
-    text: message,
-    style: {
-      background: "red",
-      color: "white",
-      borderRadius: "10px",
-    },
-  }).showToast();
+  Toast.fire({ icon: "error", title: message });
 };
 
 const successToast = (message) => {
-  Toastify({
-    text: message,
-    style: {
-      background: "green",
-      color: "white",
-      borderRadius: "10px",
-    },
-  }).showToast();
+  Toast.fire({ icon: "success", title: message });
 };
 
 

@@ -1,0 +1,11 @@
+html,
+body {
+  user-select: none;
+  /* Standard property */
+  -webkit-user-select: none;
+  /* For Safari */
+  -moz-user-select: none;
+  /* For older versions of Firefox */
+  -ms-user-select: none;
+  /* For older versions of IE/Edge */
+}

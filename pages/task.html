@@ -6,25 +6,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ITF Attendence</title>
   <link rel="stylesheet" href="./../assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./../assets/css/custom.min.css">
   <link rel="stylesheet" href="./../assets/css/toastify.min.css">
+  <script src="https://kit.fontawesome.com/faebf1feb3.js" crossorigin="anonymous"></script>
   <script src="./../assets/js/angular.min.js"></script>
   <script src="./../assets/js/toastify.min.js"></script>
   <script src="./../assets/js/constants.js"></script>
   <script src="./../assets/js/controller.js"></script>
+
+  <style>
+    th, td { text-align: center; vertical-align: middle; }
+  </style>
 </head>
 
 <body class="bg-dark" ng-app="itf" ng-cloak>
   <div class="container-fluid px-4" ng-controller="TaskController">
     <div class="my-4 text-white text-center d-flex" style="align-items: center; justify-content: space-between;">
       <div>
-        <span style="font-size: 30px; font-weight: 600;">Task Manager</span>
+        <span style="font-size: 30px; font-weight: 600;" class="text-start">
+          <div>Task Manager</div>
+          <div style="display: flex; align-items: center;">
+            <div style="font-size: 12px; font-weight: 500; cursor: pointer;" ng-click="takeMeToChangePassword()">
+              Change Password
+            </div>
+            <div class="ms-3" style="font-size: 12px; font-weight: 500; cursor: pointer;" ng-click="takeMeToLeave()">
+              Take Leave
+            </div>
+          </div>
+        </span>
       </div>
       <div style="font-size: 14px;display: flex; align-items: center; justify-content: space-between;">
         <div ng-if="userData!=null" class="text-end me-2">
           <div style="font-size: 13px;">{{ userData.name }}</div>
           <div style="font-size: 9px;">{{ userData.designation }}</div>
         </div>
-        <button class="btn btn-sm btn-danger" style="cursor: pointer;" type="button" ng-click="logout()">Logout</button>
+        <button class="btn btn-sm btn-danger" style="cursor: pointer;" type="button" ng-click="logout()">
+          Logout <i class="fas fa-power-off"></i>
+        </button>
       </div>
     </div>
 
@@ -33,18 +51,18 @@
       <div class="card-body px-3">
         <div class="mb-4 row" styl="font-size: 13px;">
           <div class="col text-start text-success">
-            Start time: {{ time.startTime != 0 ? formatTimestamp(time.startTime) : '00:00:00' }}
+            <b>Start time:</b> {{ time.startTime != 0 ? formatTimestamp(time.startTime) : '00:00:00' }}
           </div>
           <div class="col text-center">
-            End time: {{ time.endTime !=0 ? formatTimestamp(time.endTime) : '00:00:00' }}
+            <b>End time:</b> {{ time.endTime !=0 ? formatTimestamp(time.endTime) : '00:00:00' }}
           </div>
           <div class="col text-end text-danger">
-            Total time: {{ time.totalTime!="0" ? time.totalTime : '00:00:00' }}
+            <b>Total time:</b> {{ time.totalTime!="0" ? time.totalTime : '00:00:00' }}
           </div>
         </div>
 
         <form ng-submit="toggleTaskTime()">
-          <table class="table table-sm table-bordered mt-2 mb-4 shadow-none">
+          <table class="table table-sm table-bordered align-middle mt-2 mb-4 shadow-none">
             <thead>
               <tr>
                 <th>Task</th>
@@ -55,7 +73,7 @@
             <tbody>
               <tr ng-repeat="task in todayTasks">
                 <td>
-                  <textarea class="form-control form-control-sm" ng-model="task.taskName" required></textarea>
+                  <textarea class="form-control" placeholder="Write task here..." rows="1" ng-model="task.taskName" required></textarea>
                 </td>
                 <td>
                   <select class="form-select" ng-model="task.status">
@@ -63,8 +81,8 @@
                   </select>
                 </td>
                 <td class="text-center">
-                  <button ng-disabled="isDeletable" class="btn btn-sm btn-danger" ng-click="deleteTask(task.taskId)"
-                    style="font-size: 12px;">Delete</button>
+                  <button ng-disabled="isDeletable" class="btn btn-danger" ng-click="deleteTask(task.taskId)"
+                    style="font-size: 12px;"><i class="far fa-trash-alt"></i></button>
                 </td>
               </tr>
               <tr>
@@ -76,7 +94,7 @@
           </table>
           <div class="text-center">
             <button class="btn btn-{{ intervalWatch == null ? 'success' : 'warning'}} btn-lg" type="submit" ng-disabled="isLoading">
-              {{ intervalWatch == null ? 'Start Time' : 'End Time'}}
+              {{ intervalWatch == null ? 'Start Time' : 'End Time'}} <i class="far fa-clock"></i>
             </button>
           </div>
         </form>

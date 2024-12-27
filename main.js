@@ -15,17 +15,13 @@ const createWindow = () => {
       contextIsolation: false,
       nodeIntegration: false,
       enableRemoteModule: false,
-      devTools: false
+      // devTools: false
     },
     center: true,
-    fullscreenable: false,
-    resizable: false,
-    maximizable: false,
-    devTools: false,
+    maximizable: true,
+    // devTools: false,
     icon: path.join(__dirname, "assets/images/logo.jpg"),
   });
-
-  
 
   global.windowApp.loadURL(
     url.format({
@@ -35,7 +31,7 @@ const createWindow = () => {
     })
   );
 
-  Menu.setApplicationMenu(null);
+  // Menu.setApplicationMenu(null);
   let tray = new Tray(icon.resize({ width: 24, height: 24 }));
   let trayMenu = Menu.buildFromTemplate([
     {

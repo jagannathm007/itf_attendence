@@ -4,7 +4,9 @@ let app = angular.module("itf", []);
 app.controller("LoginController", ($scope, $http) => {
   (() => {
     let cred = getStorage(constants.session.userCredentials);
-    if(cred!=null){ window.location.href = "task.html"; }
+    if (cred != null) {
+      window.location.href = "task.html";
+    }
   })();
 
   $scope.form = { emailId: "", password: "" };
@@ -39,6 +41,14 @@ app.controller("TaskController", ($scope, $interval, $http) => {
       window.location.href = "index.html";
     }
   })();
+
+  $scope.takeMeToChangePassword = () => {
+    window.location.href = "change-password.html";
+  };
+
+  $scope.takeMeToLeave = () => {
+    window.location.href = "leave.html";
+  };
 
   $scope.logout = () => {
     clearAllStorage();
@@ -104,9 +114,9 @@ app.controller("TaskController", ($scope, $interval, $http) => {
         $scope.time.startTime = Date.now();
         setStorage(constants.session.timeStatus, "started");
         $scope.saveTimer();
-        Toastify({ text: "Timer started.", style: { background: "green", color: "white", borderRadius: "10px" } }).showToast();
+        successToast("Timer started.");
       } else {
-        Toastify({ text: "Please add task to start timer.", style: { background: "red", color: "white", borderRadius: "10px" } }).showToast();
+        errorToast("Please add task to start timer.");
       }
     } else {
       $scope.time.endTime = Date.now();
@@ -117,7 +127,7 @@ app.controller("TaskController", ($scope, $interval, $http) => {
     }
   };
 
-  $scope.lastSummary = { startTime: 0, endTime: 0, toalTime: 0 }
+  $scope.lastSummary = { startTime: 0, endTime: 0, toalTime: 0 };
   $scope.getTimer = async () => {
     $http
       .post(
@@ -133,12 +143,13 @@ app.controller("TaskController", ($scope, $interval, $http) => {
       .then((response) => {
         let extract = extractResponse(response);
         if (extract.data != 0 && Array.isArray(extract.data)) {
-          console.log(extract.data);
           $scope.todayTasks = extract.data[0].tasks;
           setStorage(constants.session.timeStatus, extract.data[0].timeStatus);
           if (extract.data[0].timeStatus == "started") {
             $scope.time.startTime = Number(extract.data[0].timeSummary[extract.data[0].timeSummary.length - 1].startTime);
-            $scope.intervalWatch = $interval(() => { $scope.time.totalTime = $scope.getTimeDifference($scope.time.startTime, Date.now()); }, 1000);
+            $scope.intervalWatch = $interval(() => {
+              $scope.time.totalTime = $scope.getTimeDifference($scope.time.startTime, Date.now());
+            }, 1000);
           } else {
             $scope.time = { startTime: 0, endTime: 0, totalTime: 0 };
             $scope.lastSummary.endTime = Number(extract.data[0].timeSummary[extract.data[0].timeSummary.length - 1].endTime);
@@ -165,7 +176,6 @@ app.controller("TaskController", ($scope, $interval, $http) => {
       tasks: angular.copy($scope.todayTasks),
       timeStatus: status,
     };
-    console.log(json);
     $http
       .post(constants.endpoints.saveTimer, json, {
         headers: {
@@ -177,6 +187,107 @@ app.controller("TaskController", ($scope, $interval, $http) => {
         let extract = extractResponse(response);
         if (extract.data != 0) {
           window.location.reload();
+        }
+      })
+      .catch((err) => {
+        $scope.isLoading = false;
+        let message = handleApiError(err);
+        errorToast(message);
+      });
+  };
+});
+
+//PASSWORD CHANGE CONTROLLER
+app.controller("ChangePasswordController", ($scope, $http) => {
+  $scope.userData = null;
+  (async () => {
+    $scope.userData = getStorage(constants.session.userCredentials);
+    if ($scope.userData == null) {
+      window.location.href = "index.html";
+    }
+  })();
+
+  $scope.form = { oldPassword: "", newPassword: "" };
+
+  $scope.reset = () => {
+    $scope.form = { oldPassword: "", newPassword: "" };
+  };
+
+  $scope.onSubmit = () => {
+    $http
+      .post(constants.endpoints.changePassword, $scope.form, {
+        headers: {
+          Authorization: `Bearer ${$scope.userData.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        let extract = extractResponse(response);
+        if (extract.data != 0) {
+          $scope.reset();
+          successToast("Password updated successfully!");
+        } else {
+          errorToast(extract.message);
+        }
+      })
+      .catch((err) => {
+        $scope.isLoading = false;
+        let message = handleApiError(err);
+        errorToast(message);
+      });
+  };
+});
+
+//LEAVE
+app.controller("LeaveController", ($scope, $http) => {
+  $scope.userData = null;
+  (async () => {
+    $scope.userData = getStorage(constants.session.userCredentials);
+    if ($scope.userData == null) {
+      window.location.href = "index.html";
+    }
+  })();
+
+  const today = new Date();
+  const firstDayOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  const lastDayOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+  $scope.date = {
+    minDate: firstDayOfNextMonth.toISOString().split("T")[0],
+    maxDate: lastDayOfNextMonth.toISOString().split("T")[0],
+  };
+
+  $scope.form = {
+    fromDate: null,
+    toDate: null,
+    reason: "",
+    isReported: false,
+    reportedName: "",
+  };
+
+  $scope.reset = () => {
+    $scope.form = {
+      fromDate: null,
+      toDate: null,
+      reason: "",
+      isReported: false,
+      reportedName: "",
+    };
+  };
+
+  $scope.onSubmit = () => {
+    $http
+      .post(constants.endpoints.changePassword, $scope.form, {
+        headers: {
+          Authorization: `Bearer ${$scope.userData.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        let extract = extractResponse(response);
+        if (extract.data != 0) {
+          successToast("Password updated successfully!");
+        } else {
+          errorToast(extract.message);
         }
       })
       .catch((err) => {
