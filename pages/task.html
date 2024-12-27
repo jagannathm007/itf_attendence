@@ -61,7 +61,7 @@
           </div>
         </div>
 
-        <form ng-submit="toggleTaskTime()">
+        <form ng-submit="toggleTaskTime()" ng-show="!isTodayHoliday">
           <table class="table table-sm table-bordered align-middle mt-2 mb-4 shadow-none">
             <thead>
               <tr>
@@ -92,12 +92,20 @@
               </tr>
             </tbody>
           </table>
-          <div class="text-center">
-            <button class="btn btn-{{ intervalWatch == null ? 'success' : 'warning'}} btn-lg" type="submit" ng-disabled="isLoading">
+          <div class="text-center" ng-show="!isTodayHoliday">
+            <button class="btn btn-{{ intervalWatch == null ? 'success' : 'warning'}} btn-lg" type="submit" ng-disabled="isLoading ">
               {{ intervalWatch == null ? 'Start Time' : 'End Time'}} <i class="far fa-clock"></i>
             </button>
           </div>
         </form>
+
+        <div ng-show="isTodayHoliday" class="text-center" style="font-size: 30px;">
+          <div style="font-size: 35px; font-weight: 600;" class="text-danger">You are on leave today.</div>
+          <div style="font-size: 12px;">
+            If you need any assistance, please feel free to reach out admin. 
+          </div>
+        </div>
+
       </div>
     </div>
     <div class="text-center text-white mt-3">

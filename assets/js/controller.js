@@ -146,7 +146,7 @@ app.controller("TaskController", ($scope, $interval, $http) => {
           $scope.todayTasks = extract.data[0].tasks;
           setStorage(constants.session.timeStatus, extract.data[0].timeStatus);
           if (extract.data[0].timeStatus == "started") {
-            $scope.time.startTime = Number(extract.data[0].timeSummary[extract.data[0].timeSummary.length - 1].startTime);
+            $scope.time.startTime = Number(extract.data[0].timeSummary[0].startTime);
             $scope.intervalWatch = $interval(() => {
               $scope.time.totalTime = $scope.getTimeDifference($scope.time.startTime, Date.now());
             }, 1000);
@@ -195,6 +195,33 @@ app.controller("TaskController", ($scope, $interval, $http) => {
         errorToast(message);
       });
   };
+
+  $scope.isTodayHoliday = false;
+  $scope.getTodayHoliday = () => {
+    $scope.isLoading = true;
+    $http
+      .post(constants.endpoints.isTodayHoliday, {}, {
+        headers: {
+          Authorization: `Bearer ${$scope.userData.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        $scope.isLoading = false;
+        let extract = extractResponse(response);
+        if (Array.isArray(extract.data) && extract.data.length > 0) {
+          $scope.isTodayHoliday = true;
+        }else{
+          $scope.isTodayHoliday = false;
+        }
+      })
+      .catch((err) => {
+        $scope.isLoading = false;
+        let message = handleApiError(err);
+        errorToast(message);
+      });
+  }
+  $scope.getTodayHoliday();
 });
 
 //PASSWORD CHANGE CONTROLLER
@@ -257,26 +284,27 @@ app.controller("LeaveController", ($scope, $http) => {
   };
 
   $scope.form = {
-    fromDate: null,
-    toDate: null,
+    leaveFrom: null,
+    leaveTo: null,
     reason: "",
-    isReported: false,
-    reportedName: "",
+    isReportedToManager: false,
+    managerName: "",
   };
 
   $scope.reset = () => {
     $scope.form = {
-      fromDate: null,
-      toDate: null,
+      leaveFrom: null,
+      leaveTo: null,
       reason: "",
-      isReported: false,
-      reportedName: "",
+      isReportedToManager: false,
+      managerName: "",
     };
   };
 
   $scope.onSubmit = () => {
+    console.log($scope.form);
     $http
-      .post(constants.endpoints.changePassword, $scope.form, {
+      .post(constants.endpoints.saveLeave, $scope.form, {
         headers: {
           Authorization: `Bearer ${$scope.userData.token}`,
           "Content-Type": "application/json",
@@ -285,7 +313,8 @@ app.controller("LeaveController", ($scope, $http) => {
       .then((response) => {
         let extract = extractResponse(response);
         if (extract.data != 0) {
-          successToast("Password updated successfully!");
+          $scope.reset();
+          successToast("Leave infomation saved!");
         } else {
           errorToast(extract.message);
         }

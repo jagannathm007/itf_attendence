@@ -36,13 +36,13 @@
                 <div class="col-6">
                   <div class="form-group">
                     <label>From Date <code>*</code></label>
-                    <input type="date" class="form-control" ng-model="form.fromDate" min="{{date.minDate}}" max="{{date.maxDate}}" required>
+                    <input type="date" class="form-control" ng-model="form.leaveFrom" min="{{date.minDate}}" max="{{date.maxDate}}" required>
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="form-group">
                     <label>To Date <code>*</code></label>
-                    <input type="date" class="form-control" ng-model="form.toDate" min="{{date.minDate}}" max="{{date.maxDate}}" required>
+                    <input type="date" class="form-control" ng-model="form.leaveTo" min="{{date.minDate}}" max="{{date.maxDate}}" required>
                   </div>
                 </div>
               </div>
@@ -52,13 +52,13 @@
               </div>
 
               <label class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" ng-model="form.isReported">
+                <input class="form-check-input" type="checkbox" ng-model="form.isReportedToManager">
                 <span class="form-check-label"> Did you reported to your manager? </span>
               </label>
 
-              <div class="form-group mb-3" ng-show="form.isReported">
+              <div class="form-group mb-3" ng-show="form.isReportedToManager">
                 <label>Reported to <code>*</code></label>
-                <input type="text" placeholder="Enter Manager Name" ng-model="form.reportedName" class="form-control form-control-lg"/>
+                <input type="text" placeholder="Enter Manager Name" ng-model="form.managerName" class="form-control form-control-lg"/>
               </div>
               <button type="button" ng-click="reset()" class="btn btn-dark">Reset</button>
               <button class="btn btn-success">Save</button>
