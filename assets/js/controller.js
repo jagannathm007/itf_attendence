@@ -1,5 +1,14 @@
 let app = angular.module("itf", []);
 
+app.filter("to_trusted", [
+  "$sce",
+  function ($sce) {
+    return function (text) {
+      return $sce.trustAsHtml(text);
+    };
+  },
+]);
+
 //LOGIN CONTROLLER
 app.controller("LoginController", ($scope, $http) => {
   (() => {
@@ -42,13 +51,9 @@ app.controller("TaskController", ($scope, $interval, $http) => {
     }
   })();
 
-  $scope.takeMeToChangePassword = () => {
-    window.location.href = "change-password.html";
-  };
-
-  $scope.takeMeToLeave = () => {
-    window.location.href = "leave.html";
-  };
+  
+  $scope.takeMeToChangePassword = () => (window.location.href = "change-password.html");
+  $scope.takeMeToLeave = () => (window.location.href = "leave.html");
 
   $scope.logout = () => {
     clearAllStorage();
@@ -129,19 +134,16 @@ app.controller("TaskController", ($scope, $interval, $http) => {
 
   $scope.lastSummary = { startTime: 0, endTime: 0, toalTime: 0 };
   $scope.getTimer = async () => {
-    $http
-      .post(
-        constants.endpoints.getTimer,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${$scope.userData.token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      .then((response) => {
-        let extract = extractResponse(response);
+    try {
+      let headers = {
+        headers: {
+          Authorization: `Bearer ${$scope.userData.token}`,
+          "Content-Type": "application/json",
+        },
+      };
+      let response = await $http.post(constants.endpoints.getTimer, {}, headers);
+      let extract = extractResponse(response);
+      $scope.$apply(()=>{
         if (extract.data != 0 && Array.isArray(extract.data)) {
           $scope.todayTasks = extract.data[0].tasks;
           setStorage(constants.session.timeStatus, extract.data[0].timeStatus);
@@ -157,71 +159,101 @@ app.controller("TaskController", ($scope, $interval, $http) => {
             $scope.lastSummary.totalTime = Number(extract.data[0].timeSummary[extract.data[0].timeSummary.length - 1].totalTime);
           }
         }
-      })
-      .catch((err) => {
-        let message = handleApiError(err);
-        errorToast(message);
       });
+    } catch (err) {
+      errorToast(err.toString());
+    }
   };
-  $scope.getTimer();
 
   $scope.isLoading = false;
   $scope.saveTimer = async () => {
     $scope.isLoading = true;
-    let status = getStorage(constants.session.timeStatus);
-    let json = {
-      startTime: $scope.time.startTime,
-      endTime: $scope.time.endTime,
-      totalTime: $scope.time.totalTime != 0 ? $scope.time.endTime - $scope.time.startTime : 0,
-      tasks: angular.copy($scope.todayTasks),
-      timeStatus: status,
-    };
-    $http
-      .post(constants.endpoints.saveTimer, json, {
+    try {
+      let status = getStorage(constants.session.timeStatus);
+      let json = {
+        startTime: $scope.time.startTime,
+        endTime: $scope.time.endTime,
+        totalTime: $scope.time.totalTime != 0 ? $scope.time.endTime - $scope.time.startTime : 0,
+        tasks: angular.copy($scope.todayTasks),
+        timeStatus: status,
+      };
+      let headers = {
         headers: {
           Authorization: `Bearer ${$scope.userData.token}`,
           "Content-Type": "application/json",
         },
-      })
-      .then((response) => {
-        let extract = extractResponse(response);
-        if (extract.data != 0) {
-          window.location.reload();
-        }
-      })
-      .catch((err) => {
-        $scope.isLoading = false;
-        let message = handleApiError(err);
-        errorToast(message);
-      });
+      };
+      let response = await $http.post(constants.endpoints.saveTimer, json, headers);
+      let extract = extractResponse(response);
+      if (extract.data != 0) {
+        window.location.reload();
+      }
+    } catch (err) {
+      errorToast(err.toString());
+    } finally {
+      $scope.isLoading = false;
+    }
   };
 
   $scope.isTodayHoliday = false;
-  $scope.getTodayHoliday = () => {
-    $scope.isLoading = true;
-    $http
-      .post(constants.endpoints.isTodayHoliday, {}, {
+  $scope.getTodayHoliday = async () => {
+    try {
+      let headers = {
         headers: {
           Authorization: `Bearer ${$scope.userData.token}`,
           "Content-Type": "application/json",
         },
-      })
-      .then((response) => {
-        $scope.isLoading = false;
-        let extract = extractResponse(response);
+      };
+      let response = await $http.post(constants.endpoints.isTodayHoliday, {}, headers);
+      let extract = extractResponse(response);
+      $scope.$apply(()=>{
         if (Array.isArray(extract.data) && extract.data.length > 0) {
           $scope.isTodayHoliday = true;
-        }else{
+        } else {
           $scope.isTodayHoliday = false;
         }
-      })
-      .catch((err) => {
-        $scope.isLoading = false;
-        let message = handleApiError(err);
-        errorToast(message);
       });
-  }
-  $scope.getTodayHoliday();
+    } catch (err) {
+      errorToast(err.toString());
+    }
+  };
+
+  $scope.hasSummary = false;
+  $scope.summaryTasks = [];
+  $scope.upcomingLeaves = [];
+  $scope.getSummary = async () => {
+    try {
+      let headers = {
+        headers: {
+          Authorization: `Bearer ${$scope.userData.token}`,
+          "Content-Type": "application/json",
+        },
+      };
+      let response = await $http.post(constants.endpoints.summary, {}, headers);
+      let extract = extractResponse(response);
+      if (extract.data != 0) {
+        $scope.$apply(()=>{
+          $scope.hasSummary = true;
+          $scope.summaryTasks = extract.data.tasks;
+          $scope.upcomingLeaves = extract.data.upcomingLeaves;
+        });
+      }
+    } catch (err) {
+      errorToast(err.toString());
+    }
+  };
+
+  $scope.initialLoading = true;
+  $scope.refresh = async () => {
+    $scope.initialLoading = true;
+    await $scope.getTodayHoliday();
+    await $scope.getSummary();
+    await $scope.getTimer();
+    $scope.$apply(()=>{
+      $scope.initialLoading = false;
+    });
+  };
+  $scope.refresh();
 });
 
 //PASSWORD CHANGE CONTROLLER

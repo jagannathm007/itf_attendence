@@ -1,4 +1,4 @@
-let isDevelopment = false;
+let isDevelopment = true;
 let baseURL = isDevelopment ? "http://localhost:3100/api/employee" :  "http://back.realmotors.in/api/employee";
 let constants = {
   session: {
@@ -14,7 +14,7 @@ let constants = {
     changePassword: `${baseURL}/change-password`,
     saveLeave: `${baseURL}/leave`,
     isTodayHoliday: `${baseURL}/isTodayHoliday`,
-    
+    summary: `${baseURL}/summary`,
   },
 };
 

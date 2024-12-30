@@ -10,7 +10,7 @@ let icon = nativeImage.createFromPath(iconPath);
 const createWindow = () => {
   global.windowApp = new BrowserWindow({
     width: 850,
-    height: 600,
+    height: 700,
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: false,

@@ -15,7 +15,11 @@
   <script src="./../assets/js/controller.js"></script>
 
   <style>
-    th, td { text-align: center; vertical-align: middle; }
+    th,
+    td {
+      text-align: center;
+      vertical-align: middle;
+    }
   </style>
 </head>
 
@@ -31,6 +35,9 @@
             </div>
             <div class="ms-3" style="font-size: 12px; font-weight: 500; cursor: pointer;" ng-click="takeMeToLeave()">
               Take Leave
+            </div>
+            <div class="ms-3" style="font-size: 12px; font-weight: 500; cursor: pointer;" ng-click="refresh()">
+              Refresh
             </div>
           </div>
         </span>
@@ -49,63 +56,98 @@
 
     <div class="card border-0">
       <div class="card-body px-3">
-        <div class="mb-4 row" styl="font-size: 13px;">
-          <div class="col text-start text-success">
-            <b>Start time:</b> {{ time.startTime != 0 ? formatTimestamp(time.startTime) : '00:00:00' }}
+        <div ng-show="!initialLoading">
+          <div class="mb-4 row" styl="font-size: 13px;" >
+            <div class="col text-start text-success">
+              <b>Start time:</b> {{ time.startTime != 0 ? formatTimestamp(time.startTime) : '00:00:00' }}
+            </div>
+            <div class="col text-center">
+              <b>End time:</b> {{ time.endTime !=0 ? formatTimestamp(time.endTime) : '00:00:00' }}
+            </div>
+            <div class="col text-end text-danger">
+              <b>Total time:</b> {{ time.totalTime!="0" ? time.totalTime : '00:00:00' }}
+            </div>
           </div>
-          <div class="col text-center">
-            <b>End time:</b> {{ time.endTime !=0 ? formatTimestamp(time.endTime) : '00:00:00' }}
+  
+          <form ng-submit="toggleTaskTime()" ng-show="!isTodayHoliday">
+            <table class="table table-sm table-bordered align-middle mt-2 mb-4 shadow-none">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th width="25%" class="text-center">Status</th>
+                  <th width="25%" class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="task in todayTasks">
+                  <td>
+                    <textarea class="form-control" placeholder="Write task here..." rows="1" ng-model="task.taskName"
+                      required></textarea>
+                  </td>
+                  <td>
+                    <select class="form-select" ng-model="task.status">
+                      <option ng-repeat="status in taskStatus" value="{{status}}">{{ status | uppercase}}</option>
+                    </select>
+                  </td>
+                  <td class="text-center">
+                    <button ng-disabled="isDeletable" class="btn btn-danger" ng-click="deleteTask(task.taskId)"
+                      style="font-size: 12px;"><i class="far fa-trash-alt"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="text-center">
+                    <button class="btn btn-sm btn-light" type="button" ng-click="addTask()">+ Add More</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="text-center" ng-show="!isTodayHoliday">
+              <button class="btn btn-{{ intervalWatch == null ? 'success' : 'warning'}} btn-lg" type="submit"
+                ng-disabled="isLoading ">
+                {{ intervalWatch == null ? 'Start Time' : 'End Time'}} <i class="far fa-clock"></i>
+              </button>
+            </div>
+          </form>
+  
+          <div ng-show="isTodayHoliday" class="text-center" style="font-size: 30px;">
+            <div style="font-size: 35px; font-weight: 600;" class="text-danger">You are on leave today.</div>
+            <div style="font-size: 12px;">
+              If you need any assistance, please feel free to reach out admin.
+            </div>
           </div>
-          <div class="col text-end text-danger">
-            <b>Total time:</b> {{ time.totalTime!="0" ? time.totalTime : '00:00:00' }}
+  
+          <hr style="background-color: gray;">
+  
+          <div ng-show="hasSummary">
+            <div class="row">
+              <div class="col-5">
+                <div style="font-weight: 600;">Last works</div>
+                <ol style="font-size: 12px;" ng-show="summaryTasks.length > 0" class="mt-1">
+                  <li ng-repeat="task in summaryTasks" ng-bind-html="task | to_trusted"></li>
+                </ol>
+                <div ng-show="summaryTasks.length == 0" class="mt-1">
+                  [ Last Work Not Available ]
+                </div>
+              </div>
+              <div class="col">
+                <div style="font-weight: 600;">Upcoming or running leaves</div>
+                <ol style="font-size: 12px;" ng-show="upcomingLeaves.length > 0" class="mt-1">
+                  <li ng-repeat="leave in upcomingLeaves">
+                    {{leave.leaveFrom | date:'dd MMM yyyy'}} to {{leave.leaveTo | date:'dd MMM yyyy'}} and reported to <b>{{ leave.isReportedToManager ? leave.managerName : 'No-one' | uppercase}}</b>.
+                  </li>
+                </ol>
+                <div ng-show="upcomingLeaves.length == 0" class="mt-1">
+                  [ No Upcoming Leaves Found ]
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <form ng-submit="toggleTaskTime()" ng-show="!isTodayHoliday">
-          <table class="table table-sm table-bordered align-middle mt-2 mb-4 shadow-none">
-            <thead>
-              <tr>
-                <th>Task</th>
-                <th width="25%" class="text-center">Status</th>
-                <th width="25%" class="text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr ng-repeat="task in todayTasks">
-                <td>
-                  <textarea class="form-control" placeholder="Write task here..." rows="1" ng-model="task.taskName" required></textarea>
-                </td>
-                <td>
-                  <select class="form-select" ng-model="task.status">
-                    <option ng-repeat="status in taskStatus" value="{{status}}">{{ status | uppercase}}</option>
-                  </select>
-                </td>
-                <td class="text-center">
-                  <button ng-disabled="isDeletable" class="btn btn-danger" ng-click="deleteTask(task.taskId)"
-                    style="font-size: 12px;"><i class="far fa-trash-alt"></i></button>
-                </td>
-              </tr>
-              <tr>
-                <td colspan="3" class="text-center">
-                  <button class="btn btn-sm btn-light" type="button" ng-click="addTask()">+ Add More</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="text-center" ng-show="!isTodayHoliday">
-            <button class="btn btn-{{ intervalWatch == null ? 'success' : 'warning'}} btn-lg" type="submit" ng-disabled="isLoading ">
-              {{ intervalWatch == null ? 'Start Time' : 'End Time'}} <i class="far fa-clock"></i>
-            </button>
-          </div>
-        </form>
-
-        <div ng-show="isTodayHoliday" class="text-center" style="font-size: 30px;">
-          <div style="font-size: 35px; font-weight: 600;" class="text-danger">You are on leave today.</div>
-          <div style="font-size: 12px;">
-            If you need any assistance, please feel free to reach out admin. 
+        <div ng-show="initialLoading">
+          <div class="spinner-border text-dark" role="status">
+            <span class="visually-hidden">Loading...</span>
           </div>
         </div>
-
       </div>
     </div>
     <div class="text-center text-white mt-3">
